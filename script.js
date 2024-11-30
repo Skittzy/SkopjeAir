@@ -1,15 +1,12 @@
 const weatherApiKey = '' //ADD YOUR API KEY HERE
-// // Logika za samo 1 grad
+// // Podatoci samo za Skopje
 const cityInput = 'skopje'
 const lat = '42'
 const lon = '21.4333'
-// const lat = '40.7143'
-// const lon = '-74.006'
 
-// Ova se podatocite koj vo vid na tekst gi displejnuvame prevzemeni od WeatherApi
 const countryTxt = document.querySelector('.country-txt') //Ime na grad
-const tempTxt = document.querySelector('.temp-txt') // Temperatura (smeni)
-const conditionTxt = document.querySelector('.condition-txt') // Condition (smeni)
+const tempTxt = document.querySelector('.temp-txt') // AQI sostojba
+const conditionTxt = document.querySelector('.condition-txt') // Objasnuvanje
 const humidityValueTxt = document.querySelector('.humidity-value-txt')
 const windValueTxt = document.querySelector('.wind-value-txt')
 const weatherSummaryImg = document.querySelector('.weather-summary-img')
@@ -50,6 +47,8 @@ document.addEventListener("DOMContentLoaded", function() {
 //     }
 // })
 
+// NEW SECTION: Air Quality Logic
+
 async function getFetchAirData(endPoint, lat, lon) {
     // const apiUrl = `https://skopje.pulse.eco/rest/current`
     const apiUrl = `http://api.openweathermap.org/data/2.5/air_pollution${endPoint}?lat=${lat}&lon=${lon}&appid=${weatherApiKey}`
@@ -61,8 +60,6 @@ async function getFetchAirData(endPoint, lat, lon) {
 
 async function updateAirInfo() {
     const airData = await getFetchAirData('', lat, lon)
-
-    //console.log(airData)
 
     const {
         list: [{ components, main }]
@@ -104,55 +101,57 @@ async function updateAirInfo() {
         weatherSummaryImg.src = `assets/airQuality/badAir.svg`
     }
 
-    await updateForcastAirInfo(lat, lon)
+    //await updateForcastAirInfo(lat, lon)
 }
 
-// Forcast Air polution logic
-async function updateForcastAirInfo(lat, lon) {
-    const forecastsAirData = await getFetchAirData('/forecast', lat, lon)
+// Forcast Air polution logic From API (decided not to use, instead used custom formulas to calculate AQI)
 
-    //console.log(forecastsAirData)
+// async function updateForcastAirInfo(lat, lon) {
+//     const forecastsAirData = await getFetchAirData('/forecast', lat, lon)
 
-    const timeTaken = '12:00:00'
-    const todayDate = new Date().toISOString().split('T')[0]
+//     //console.log(forecastsAirData)
 
-    var myDate = new Date(forecastsAirData.list[0].dt*1000)
-    //console.log(myDate.toISOString().split('T')[1].split('Z')[0]) //--> Dava Saat
-    //console.log(myDate.toISOString().split('T')[0]) //--> dava data
+//     const timeTaken = '12:00:00'
+//     const todayDate = new Date().toISOString().split('T')[0]
+
+//     var myDate = new Date(forecastsAirData.list[0].dt*1000)
+//     //console.log(myDate.toISOString().split('T')[1].split('Z')[0]) //--> Dava Saat
+//     //console.log(myDate.toISOString().split('T')[0]) //--> dava data
     
-    // vo klasata forecasts
-    forecastItemTemp.innerHTML = ''
+//     // vo klasata forecasts
+//     forecastItemTemp.innerHTML = ''
 
-    forecastsAirData.list.forEach(forcAirData => {
-        // gi zemame vrednostite samo za 12:00 od slednite (forecast denovi) i plus da ne go pokazuvame vremeto 12:00 zs ne ni treba
-        var myDate = new Date(forcAirData.dt*1000)
+//     forecastsAirData.list.forEach(forcAirData => {
+//         // gi zemame vrednostite samo za 12:00 od slednite (forecast denovi) i plus da ne go pokazuvame vremeto 12:00 zs ne ni treba
+//         var myDate = new Date(forcAirData.dt*1000)
 
-        if (myDate.toISOString().split('T')[1].split('Z')[0].includes(timeTaken) && !myDate.toISOString().split('T')[0].includes(todayDate)) {
-            //console.log('vlegov vo loopot')
-            updateAirDataForecastItems(forcAirData)
-        }
-    })
-}
+//         if (myDate.toISOString().split('T')[1].split('Z')[0].includes(timeTaken) && !myDate.toISOString().split('T')[0].includes(todayDate)) {
+//             //console.log('vlegov vo loopot')
+//             updateAirDataForecastItems(forcAirData)
+//         }
+//     })
+// }
 
-function updateAirDataForecastItems(airData) {
-    const {
-        components: { pm10, pm2_5 }
+// function updateAirDataForecastItems(airData) {
+//     const {
+//         components: { pm10, pm2_5 }
         
-    } = airData
+//     } = airData
 
-    //console.log(pm10)
+//     //console.log(pm10)
 
-    //drug nacin kako da insertnes API data vo vrednostite na sajtot
-    const pm10cesticki = `
-        <div class="forecast-item">
-            <h5 class="forecast-item-temp">${pm10} °C</h5>
-        </div>
-    `
-    forecastItemTemp.insertAdjacentHTML('beforeend', pm2_5)
-}
+//     //drug nacin kako da insertnes API data vo vrednostite na sajtot
+//     const pm10cesticki = `
+//         <div class="forecast-item">
+//             <h5 class="forecast-item-temp">${pm10} °C</h5>
+//         </div>
+//     `
+//     forecastItemTemp.insertAdjacentHTML('beforeend', pm2_5)
+// }
 
 
-// Weather logic
+// NEW SECTION: Weather Logic
+
 async function getFetchWeatherData(endPoint, city) {
     const apiUrl = `https://api.openweathermap.org/data/2.5/${endPoint}?q=${city}&appid=${weatherApiKey}&units=metric`
 
@@ -190,8 +189,6 @@ async function updateWeatherInfo(city) {
     //     return
     // }
 
-    //console.log(weatherData)
-
     const {
         name: country,
         main: { temp, humidity },
@@ -200,14 +197,8 @@ async function updateWeatherInfo(city) {
     } = weatherData
 
     countryTxt.textContent = country
-    // tempTxt.textContent = Math.round(temp) + ' °C'
-    // conditionTxt.textContent = main
-    // humidityValueTxt.textContent = humidity + "%"
-    // windValueTxt.textContent = speed + ' m/s'
 
     currentDateTxt.textContent = getCurrentDate()
-    //weatherSummaryImg.src = `assets/weather/${getWeatherIcon(id)}`
-    
 
     await updateWeatherForecastInfo(city)
     // Logika za menjanje na sekcii, odnosno od search city --> Error ako nepostoi gradot --> weather info ako postoi
@@ -217,14 +208,10 @@ async function updateWeatherInfo(city) {
 // Forcast Logic
 async function updateWeatherForecastInfo(city) {
     const forecastsData = await getFetchWeatherData('forecast', city);
-
-
-    console.log(forecastsData)
     
     const timeTaken = '12:00:00'
     const todayDate = new Date().toISOString().split('T')[0]
     
-    // vo klasata forecasts
     forecastItemsContainer.innerHTML = ''
     forecastsData.list.forEach(forecastWeather => {
         // gi zemame vrednostite samo za 12:00 od slednite (forecast denovi) i plus da ne go pokazuvame vremeto 12:00 zs ne ni treba
@@ -235,7 +222,6 @@ async function updateWeatherForecastInfo(city) {
 }
 
 function updateWeatherForecastItems(weatherData) {
-    // gi vadime varijablite koj so ni trebaat za forecastov (id za ikona, temperatura, data)
     const {
         dt_txt: date,
         weather: [{ id }],
@@ -255,32 +241,22 @@ function updateWeatherForecastItems(weatherData) {
     const pm10molecules = 55 + 0.4*temp - 0.35*humidity + 1.5*speed
     const pm2_5molecules = 28 + 0.3*temp - 0.25*humidity + 1.2*speed
 
-    //console.log(pm10molecules)
-    //console.log(pm2_5molecules)
-
     let airQualityIndex = 0
     if(pm10molecules <= 25 && pm2_5molecules <= 15) {
-        forecastItemTemp.style.color = "#c3ff87"
         airQualityIndex = 'Good'
     }
     else if((pm10molecules > 25 && pm10molecules <= 50) && (pm2_5molecules <= 30)) {
-        forecastItemTemp.style.color = "#f7ff87"
         airQualityIndex = 'Fair'
     }
     else if((pm10molecules <= 90 && pm10molecules > 50) && (pm2_5molecules <= 55)) {
-        forecastItemTemp.style.color = "#fff494"
         airQualityIndex = 'Moderate'
     }
     else if((pm10molecules > 90 && pm10molecules <= 180) && (pm2_5molecules <= 110)) {
-        forecastItemTemp.style.color = "#fcbe97"
         airQualityIndex = 'Poor'
     } else {
-        forecastItemTemp.style.color = "#ff9c9c"
         airQualityIndex = 'Bad'
     }
     
-
-    //drug nacin kako da insertnes API data vo vrednostite na sajtot
     const forecastItem = `
         <div class="forecast-item">
             <h5 class="forecast-item-date regular-txt">${dateResult}</h5>
@@ -288,10 +264,13 @@ function updateWeatherForecastItems(weatherData) {
             <h5 class="forecast-item-temp">${airQualityIndex}</h5>
         </div>
     `
+
+    forecastItemTemp.style.color = "#ff9c9c"
+    
     forecastItemsContainer.insertAdjacentHTML('beforeend', forecastItem)
 }
 
- // Logika za menjanje na sekcii, odnosno od search city --> Error ako nepostoi gradot --> weather info ako postoi
+ // Logika za menjanje na sekcii, od search city --> Error ako nepostoi gradot --> weather info ako postoi
 // function showDisplaySection(section) {
 //     [weatherInfoSection, searchCitySection, notFoundSection]
 //         .forEach(section => section.style.display = 'none')
