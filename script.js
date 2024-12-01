@@ -1,4 +1,4 @@
-const weatherApiKey = '' //ADD YOUR API KEY HERE
+const weatherApiKey = '96644debc92617f68e34baefc12f33aa' //ADD YOUR API KEY HERE
 // // Podatoci samo za Skopje
 const cityInput = 'skopje'
 const lat = '42'
